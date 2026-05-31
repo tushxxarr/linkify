@@ -3,320 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Transfer Pro</title>
+    <title>Link Transfer Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Modern Typography & Smooth Animations */
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; }
-        
-        /* 🛠️ CORE DEPLOYMENT FALLBACKS 🛠️ */
-        /* Prevents massive SVGs and broken layouts if the Tailwind CDN is delayed or blocked */
-        .hidden, .hidden-view { display: none !important; }
-        .opacity-0 { opacity: 0 !important; }
-        svg { max-width: 100%; height: auto; }
-        .w-48 { width: 12rem !important; } .h-48 { height: 12rem !important; }
-        .w-8 { width: 2rem !important; } .h-8 { height: 2rem !important; }
-        .w-6 { width: 1.5rem !important; } .h-6 { height: 1.5rem !important; }
-        .w-5 { width: 1.25rem !important; } .h-5 { height: 1.25rem !important; }
-        
-        .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        /* Custom Animations & Scrollbar */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .hidden-view { display: none !important; }
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Modern Spinner */
         .spinner {
-            width: 48px;
-            height: 48px;
-            border: 5px solid rgba(59, 130, 246, 0.2);
-            border-bottom-color: #3b82f6;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #3b82f6;
             border-radius: 50%;
-            display: inline-block;
-            box-sizing: border-box;
-            animation: rotation 1s linear infinite;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
         }
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="text-gray-100 min-h-screen flex flex-col selection:bg-blue-500/30">
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col selection:bg-blue-500/30">
 
-    <!-- BACKGROUND GLOW EFFECTS -->
-    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-600/10 blur-[120px]"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-600/10 blur-[120px]"></div>
-    </div>
-
-    <!-- VIEW: REDIRECTING ENGINE -->
+    <!-- VIEW: REDIRECTING -->
     <div id="view-redirect" class="hidden-view flex-1 flex flex-col items-center justify-center p-6 text-center">
-        <div class="glass-panel p-10 rounded-[2rem] shadow-2xl max-w-md w-full slide-up relative overflow-hidden">
-            <div id="redirect-progress" class="absolute top-0 left-0 h-1 bg-blue-500 w-0 transition-all duration-1000 ease-linear"></div>
+        <div class="bg-gray-800 p-8 rounded-3xl shadow-2xl max-w-md w-full border border-gray-700 fade-in">
+            <div id="redirect-spinner" class="spinner mx-auto mb-6"></div>
+            <h2 class="text-3xl font-extrabold text-white mb-3" id="redirect-title">Locating Link...</h2>
+            <p class="text-gray-400 font-medium" id="redirect-msg">Please wait while we transfer you securely.</p>
             
-            <div id="redirect-spinner" class="spinner mx-auto mb-8"></div>
-            
-            <h2 class="text-3xl font-extrabold text-white mb-3 tracking-tight" id="redirect-title">Initializing Transfer</h2>
-            <p class="text-gray-400 font-medium mb-8" id="redirect-msg">Establishing secure connection...</p>
-            
-            <button id="redirect-btn" class="hidden w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-lg shadow-blue-500/25 active:scale-[0.98]">
-                Proceed to Destination
+            <!-- Fallback button if auto-redirect fails or user wants to proceed manually -->
+            <button id="redirect-btn" class="hidden mt-8 w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-blue-500/20">
+                Continue to Destination
             </button>
         </div>
     </div>
 
-    <!-- VIEW: SECURE ADMIN LOGIN -->
+    <!-- VIEW: ADMIN LOGIN -->
     <div id="view-login" class="hidden-view flex-1 flex items-center justify-center p-6">
-        <div class="glass-panel p-10 rounded-[2rem] shadow-2xl max-w-sm w-full slide-up">
+        <div class="bg-gray-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full border border-gray-700 fade-in">
             <div class="text-center mb-8">
-                <div class="bg-slate-800 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-slate-700 shadow-inner rotate-3">
-                    <svg width="32" height="32" class="w-8 h-8 text-blue-400 -rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                <div class="bg-gray-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-700 shadow-inner">
+                    <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                 </div>
-                <h2 class="text-2xl font-extrabold text-white tracking-tight">System Access</h2>
-                <p class="text-slate-400 text-sm mt-2">Authenticate to manage routing</p>
+                <h2 class="text-2xl font-bold text-white">Admin Access</h2>
+                <p class="text-gray-400 text-sm mt-2">Enter password to manage your redirects.</p>
             </div>
             
-            <form id="login-form" class="space-y-5">
-                <div class="relative">
-                    <input type="password" id="password-input" placeholder="Encryption Key (Password)" class="w-full bg-slate-900/50 border border-slate-700 text-white rounded-xl px-5 py-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-slate-500 font-medium" required>
-                </div>
-                <button type="submit" class="w-full bg-white text-slate-900 hover:bg-slate-100 font-bold py-4 rounded-xl transition-all shadow-xl shadow-white/10 active:scale-[0.98]">
-                    Unlock Dashboard
+            <form id="login-form" class="space-y-4">
+                <input type="password" id="password-input" placeholder="Enter Password" class="w-full bg-gray-900 border border-gray-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-500" required>
+                <button type="submit" class="w-full bg-white text-gray-900 hover:bg-gray-200 font-bold py-3 rounded-xl transition-all shadow-lg active:scale-95">
+                    Unlock Portal
                 </button>
             </form>
-            
-            <p class="text-xs text-center text-red-400 mt-6 font-medium">
-                ⚠️ Warning: Pure client-side authentication is not secure for production.
-            </p>
         </div>
     </div>
 
-    <!-- VIEW: COMMAND DASHBOARD -->
-    <div id="view-dashboard" class="hidden-view flex-1 flex flex-col p-4 md:p-8 max-w-7xl mx-auto w-full fade-in">
-        
-        <!-- Header -->
-        <header class="flex flex-col md:flex-row justify-between items-center mb-8 glass-panel p-5 md:px-8 md:py-6 rounded-3xl shadow-lg gap-4">
-            <div class="flex items-center gap-4">
-                <div class="bg-gradient-to-br from-blue-600 to-indigo-600 p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
-                    <svg width="24" height="24" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+    <!-- VIEW: ADMIN DASHBOARD -->
+    <div id="view-dashboard" class="hidden-view flex-1 flex flex-col p-4 md:p-8 max-w-6xl mx-auto w-full fade-in">
+        <header class="flex justify-between items-center mb-8 bg-gray-800 p-4 md:p-6 rounded-2xl border border-gray-700 shadow-md">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-2 rounded-lg">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                 </div>
-                <div>
-                    <h1 class="text-2xl font-extrabold text-white tracking-tight">LinkTransfer <span class="text-blue-500">Pro</span></h1>
-                    <p class="text-xs text-slate-400 font-medium tracking-wide uppercase mt-0.5" id="db-status-text">System initializing...</p>
-                </div>
+                <h1 class="text-xl font-bold text-white tracking-wide">LinkTransfer <span class="text-blue-500">Pro</span></h1>
             </div>
             <div class="flex items-center gap-4">
-                <div class="px-4 py-2 bg-slate-800 rounded-lg border border-slate-700 flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full" id="db-status-indicator"></span>
-                    <span class="text-sm font-semibold text-slate-300" id="db-mode-label">Mode</span>
+                <div id="db-status" class="hidden md:flex items-center gap-2 text-xs font-mono bg-gray-900 px-3 py-1.5 rounded-md border border-gray-700">
+                    <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span> Local Mode
                 </div>
-                <button id="btn-logout" class="p-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all" title="Secure Lock">
-                    <svg width="24" height="24" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                </button>
+                <button id="btn-logout" class="text-sm font-semibold text-gray-400 hover:text-white transition-colors">Lock</button>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Panel: Create Link -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Create Link Panel -->
             <div class="lg:col-span-1">
-                <div class="glass-panel rounded-[2rem] p-7 shadow-xl sticky top-8">
-                    <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                        <svg width="20" height="20" class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
-                        Deploy Route
+                <div class="bg-gray-800 rounded-3xl p-6 border border-gray-700 shadow-xl sticky top-6">
+                    <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        Create New Link
                     </h3>
-                    
-                    <form id="create-link-form" class="space-y-5">
-                        <!-- URL Input -->
+                    <form id="create-link-form" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Destination URL</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <svg width="20" height="20" class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
-                                </div>
-                                <input type="url" id="target-url" placeholder="https://example.com" class="w-full bg-slate-900/60 border border-slate-700 text-white rounded-xl pl-11 pr-4 py-3.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium" required>
-                            </div>
+                            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Destination URL</label>
+                            <input type="url" id="target-url" placeholder="https://..." class="w-full bg-gray-900 border border-gray-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-all" required>
                         </div>
-
-                        <!-- Expiration Preset -->
                         <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Expiration Preset</label>
-                            <select id="expiration-select" class="w-full bg-slate-900/60 border border-slate-700 text-white rounded-xl px-4 py-3.5 focus:outline-none focus:border-blue-500 transition-all appearance-none cursor-pointer font-medium">
-                                <option value="lifetime">Lifetime (Manual Delete)</option>
+                            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Link Validity</label>
+                            <select id="expiration-select" class="w-full bg-gray-900 border border-gray-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-all appearance-none cursor-pointer">
+                                <option value="lifetime">Lifetime (Until I close it)</option>
+                                <option value="1m">1 Minute (For testing)</option>
                                 <option value="1h">1 Hour</option>
                                 <option value="24h">24 Hours</option>
                                 <option value="7d">7 Days</option>
-                                <option value="custom">Custom Date & Time...</option>
                             </select>
                         </div>
-
-                        <!-- Custom Expiration (Hidden by default) -->
-                        <div id="custom-date-container" class="hidden">
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Select Exact Time</label>
-                            <input type="datetime-local" id="custom-datetime" class="w-full bg-slate-900/60 border border-slate-700 text-white rounded-xl px-4 py-3.5 focus:outline-none focus:border-blue-500 transition-all font-medium" min="">
-                        </div>
-
-                        <button type="submit" id="btn-generate" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-500/25 mt-6 active:scale-[0.98] flex items-center justify-center gap-2">
-                            <span>Deploy Short Link</span>
-                            <svg width="20" height="20" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        <button type="submit" id="btn-generate" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-blue-500/20 mt-4 active:scale-95">
+                            Generate Short Link
                         </button>
                     </form>
                 </div>
             </div>
 
-            <!-- Right Panel: Active Links -->
+            <!-- Links List Panel -->
             <div class="lg:col-span-2">
-                <div class="glass-panel rounded-[2rem] p-7 shadow-xl min-h-[600px] flex flex-col relative">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                        <div>
-                            <h3 class="text-xl font-bold text-white">Active Routes</h3>
-                            <p class="text-sm text-slate-400 mt-1">Manage and track your transfer links</p>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <button onclick="loadDashboard()" class="p-2 text-slate-400 hover:text-white transition-colors" title="Refresh">
-                                <svg width="20" height="20" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                            </button>
-                            <span id="link-count" class="bg-blue-500/10 text-blue-400 text-sm font-bold px-4 py-1.5 rounded-full border border-blue-500/20">0 Active</span>
-                        </div>
+                <div class="bg-gray-800 rounded-3xl p-6 border border-gray-700 shadow-xl min-h-[500px] flex flex-col">
+                    <div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
+                        <h3 class="text-lg font-bold text-white">Active Transfers</h3>
+                        <span id="link-count" class="bg-gray-900 text-blue-400 text-xs font-bold px-3 py-1.5 rounded-full border border-gray-700">0 Links</span>
                     </div>
                     
-                    <div id="links-container" class="space-y-4 overflow-y-auto flex-1 pr-2 pb-4">
-                        <!-- Dynamic Link Cards Render Here -->
+                    <div id="links-container" class="space-y-4 overflow-y-auto flex-1 pr-2">
+                        <!-- Links will render here -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- QR Code Modal -->
-    <div id="qr-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-slate-800 border border-slate-700 rounded-3xl p-8 max-w-sm w-full shadow-2xl transform scale-95 transition-transform duration-300" id="qr-modal-content">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-white">Share via QR</h3>
-                <button onclick="closeQRModal()" class="text-slate-400 hover:text-white">
-                    <svg width="24" height="24" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <div class="bg-white p-4 rounded-2xl flex justify-center mb-6">
-                <img id="qr-image" src="" alt="QR Code" class="w-48 h-48" style="display: block; max-width: 100%;">
-            </div>
-            <div class="text-center">
-                <p class="text-sm text-slate-400 mb-4" id="qr-url-text"></p>
-                <button onclick="downloadQR()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition-all">
-                    Download Image
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 glass-panel text-white px-6 py-3.5 rounded-full shadow-2xl transition-all translate-y-20 opacity-0 duration-300 pointer-events-none z-50 flex items-center gap-3 font-semibold border-t border-slate-600/50">
-        <svg id="toast-icon" width="20" height="20" class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <!-- Custom Toast Notification -->
+    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 border border-gray-700 text-white px-6 py-3 rounded-full shadow-2xl transition-all translate-y-20 opacity-0 duration-300 pointer-events-none z-50 flex items-center gap-3 font-medium">
+        <svg id="toast-icon" class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         <span id="toast-message">Notification</span>
     </div>
 
     <script>
-        // =========================================================================
-        // ⚙️ SYSTEM CONFIGURATION & ENVIRONMENT VARIABLES
-        // =========================================================================
-        /*
-         * WARNING: It is inherently insecure to place database tokens in frontend HTML.
-         * For a production app, these values must remain on a backend server.
-         */
-        const ENV = {
-            ADMIN_PASSWORD: "admin", 
-            KV_REST_API_URL: "", 
-            KV_REST_API_TOKEN: "" 
-        };
-        // =========================================================================
+        // ==========================================
+        // ⚙️ CONFIGURATION & VERCEL NATIVE SETUP
+        // ==========================================
+        
+        const ADMIN_PASSWORD = "admin"; 
 
-        const isVercelMode = ENV.KV_REST_API_URL !== "" && ENV.KV_REST_API_TOKEN !== "";
+        /* 
+         * 🚀 VERCEL KV (REDIS) INTEGRATION
+         * To make this work globally without Firebase, Vercel provides a free KV database.
+         * 1. Go to your Vercel Dashboard -> Storage -> Create KV Database.
+         * 2. Connect it to this project.
+         * 3. Go to the `.env.local` tab in Vercel Storage and copy the REST API details here:
+         */
+        const VERCEL_KV_REST_API_URL = ""; // e.g., "https://fitting-urchin-32145.upstash.io"
+        const VERCEL_KV_REST_API_TOKEN = ""; // e.g., "AYhHAFGHK..."
+        
+        // Auto-detect if user has configured Vercel KV
+        const isVercelMode = VERCEL_KV_REST_API_URL !== "" && VERCEL_KV_REST_API_TOKEN !== "";
 
         // ==========================================
-        // 💾 DATABASE ENGINE (Vercel KV API)
+        // 💾 DATABASE DRIVER (Abstracts KV vs LocalStorage)
         // ==========================================
         const DB = {
-            headers: {
-                Authorization: `Bearer ${ENV.KV_REST_API_TOKEN}`,
-                'Content-Type': 'application/json'
-            },
-            
-            async save(key, data, useKeepAlive = false) {
+            async save(key, data) {
                 if (isVercelMode) {
-                    await fetch(`${ENV.KV_REST_API_URL}/set/${key}`, {
+                    await fetch(`${VERCEL_KV_REST_API_URL}/set/${key}`, {
                         method: 'POST',
-                        headers: this.headers,
-                        body: JSON.stringify(data),
-                        keepalive: useKeepAlive // FIX: Ensure request fires even if page navigates
+                        headers: { Authorization: `Bearer ${VERCEL_KV_REST_API_TOKEN}` },
+                        body: JSON.stringify(data)
                     });
                 } else {
-                    const links = JSON.parse(localStorage.getItem('lt_pro_links') || '{}');
+                    const links = JSON.parse(localStorage.getItem('my_links') || '{}');
                     links[key] = data;
-                    localStorage.setItem('lt_pro_links', JSON.stringify(links));
+                    localStorage.setItem('my_links', JSON.stringify(links));
                 }
             },
-            
             async get(key) {
                 if (isVercelMode) {
-                    const res = await fetch(`${ENV.KV_REST_API_URL}/get/${key}`, { headers: this.headers });
+                    const res = await fetch(`${VERCEL_KV_REST_API_URL}/get/${key}`, {
+                        headers: { Authorization: `Bearer ${VERCEL_KV_REST_API_TOKEN}` }
+                    });
                     const json = await res.json();
                     return json.result ? JSON.parse(json.result) : null;
                 } else {
-                    const links = JSON.parse(localStorage.getItem('lt_pro_links') || '{}');
+                    const links = JSON.parse(localStorage.getItem('my_links') || '{}');
                     return links[key] || null;
                 }
             },
-            
-            async incrementClick(key, data) {
-                data.clicks = (data.clicks || 0) + 1;
-                data.lastClicked = Date.now();
-                await this.save(key, data, true); // Overwrite with new click count
-            },
-
             async delete(key) {
                 if (isVercelMode) {
-                    await fetch(`${ENV.KV_REST_API_URL}/del/${key}`, { headers: this.headers });
+                    await fetch(`${VERCEL_KV_REST_API_URL}/del/${key}`, {
+                        headers: { Authorization: `Bearer ${VERCEL_KV_REST_API_TOKEN}` }
+                    });
                 } else {
-                    const links = JSON.parse(localStorage.getItem('lt_pro_links') || '{}');
+                    const links = JSON.parse(localStorage.getItem('my_links') || '{}');
                     delete links[key];
-                    localStorage.setItem('lt_pro_links', JSON.stringify(links));
+                    localStorage.setItem('my_links', JSON.stringify(links));
                 }
             },
-            
             async getAll() {
                 if (isVercelMode) {
-                    // FIX: This only gets the first 1000 records. A true production app needs pagination here.
-                    const res = await fetch(`${ENV.KV_REST_API_URL}/scan/0?match=link_*&count=1000`, { headers: this.headers });
+                    // Fetch all keys matching our prefix
+                    const res = await fetch(`${VERCEL_KV_REST_API_URL}/scan/0?match=link_*&count=100`, {
+                        headers: { Authorization: `Bearer ${VERCEL_KV_REST_API_TOKEN}` }
+                    });
                     const scanData = await res.json();
                     const keys = scanData.result[1] || [];
                     
+                    // Fetch data for each key
                     const links = {};
-                    const fetchPromises = keys.map(async (key) => {
+                    for (const key of keys) {
                         const data = await this.get(key);
                         if (data) links[key] = data;
-                    });
-                    
-                    await Promise.all(fetchPromises);
+                    }
                     return links;
                 } else {
-                    return JSON.parse(localStorage.getItem('lt_pro_links') || '{}');
+                    return JSON.parse(localStorage.getItem('my_links') || '{}');
                 }
             }
         };
 
         // ==========================================
-        // 🧠 UI ROUTING & LOGIC
+        // 🧠 APPLICATION LOGIC
         // ==========================================
         const views = {
             redirect: document.getElementById('view-redirect'),
@@ -329,48 +231,29 @@
             views[viewName].classList.remove('hidden-view');
         }
 
-        function showToast(message, type = 'success') {
+        function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
             document.getElementById('toast-message').textContent = message;
             
-            if (type === 'error') {
+            if (isError) {
                 icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>`;
                 icon.classList.replace('text-green-400', 'text-red-400');
-            } else if (type === 'info') {
-                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>`;
-                icon.classList.replace('text-red-400', 'text-blue-400');
-                icon.classList.replace('text-green-400', 'text-blue-400');
             } else {
                 icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>`;
                 icon.classList.replace('text-red-400', 'text-green-400');
-                icon.classList.replace('text-blue-400', 'text-green-400');
             }
 
             toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3500);
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
         }
 
-        // --- INIT & ROUTER ---
+        // --- ROUTER ---
         async function init() {
-            // FIX: Correctly set minimum datetime
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('custom-datetime').min = now.toISOString().slice(0,16);
-
-            // Status Indicator Logic
-            const ind = document.getElementById('db-status-indicator');
-            const lbl = document.getElementById('db-mode-label');
-            const txt = document.getElementById('db-status-text');
-            
+            // Update UI status badge
             if (isVercelMode) {
-                ind.classList.add('bg-green-500', 'shadow-[0_0_8px_rgba(34,197,94,0.8)]');
-                lbl.textContent = 'Vercel KV Connected';
-                txt.textContent = 'Production Database Active';
-            } else {
-                ind.classList.add('bg-yellow-500', 'animate-pulse');
-                lbl.textContent = 'Local Browser Mode';
-                txt.textContent = 'Add Vercel keys to config to deploy globally';
+                const badge = document.getElementById('db-status');
+                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Vercel KV Active`;
             }
 
             const urlParams = new URLSearchParams(window.location.search);
@@ -380,7 +263,7 @@
                 showView('redirect');
                 await handleRedirection(shortCode);
             } else {
-                if (sessionStorage.getItem('auth_pro') === 'true') {
+                if (sessionStorage.getItem('auth') === 'true') {
                     showView('dashboard');
                     loadDashboard();
                 } else {
@@ -389,262 +272,126 @@
             }
         }
 
-        // --- CORE REDIRECTION ENGINE ---
+        // --- REDIRECTION ENGINE ---
         async function handleRedirection(shortCode) {
             const title = document.getElementById('redirect-title');
             const msg = document.getElementById('redirect-msg');
             const spinner = document.getElementById('redirect-spinner');
             const btn = document.getElementById('redirect-btn');
-            const progress = document.getElementById('redirect-progress');
-
-            progress.style.width = '30%';
 
             const key = `link_${shortCode}`;
             const linkData = await DB.get(key);
 
-            progress.style.width = '70%';
-
             if (!linkData) {
                 spinner.style.display = 'none';
-                progress.classList.replace('bg-blue-500', 'bg-red-500');
-                progress.style.width = '100%';
-                title.textContent = "Route Not Found";
-                msg.innerHTML = "This link doesn't exist or was removed by the system administrator.";
+                title.textContent = "Link Not Found";
+                title.classList.replace('text-white', 'text-red-400');
+                msg.textContent = "This link doesn't exist or was closed by the creator.";
                 return;
             }
 
-            // Expiration Check
+            // Check Expiration
             const now = Date.now();
             if (linkData.expiresAt && now > linkData.expiresAt) {
                 spinner.style.display = 'none';
-                progress.classList.replace('bg-blue-500', 'bg-yellow-500');
-                progress.style.width = '100%';
                 title.textContent = "Link Expired";
-                msg.textContent = "The designated time window for this transfer has closed.";
+                title.classList.replace('text-white', 'text-yellow-400');
+                msg.textContent = "The time limit on this transfer has ran out.";
+                
+                // Auto-cleanup expired links to save database space
+                await DB.delete(key);
                 return;
             }
 
-            progress.style.width = '100%';
-            title.textContent = "Transferring";
-            title.classList.add('text-blue-400');
+            // Success! Transfer user.
+            title.textContent = "Transferring...";
+            title.classList.replace('text-white', 'text-blue-400');
+            msg.textContent = `Connecting you to ${new URL(linkData.target).hostname}`;
             
-            try {
-                const targetHostname = new URL(linkData.target).hostname;
-                msg.textContent = `Connecting securely to ${targetHostname}...`;
-            } catch {
-                msg.textContent = "Connecting securely...";
-            }
-            
-            // Fallback button setup
+            // Set up fallback button in case auto-redirect is blocked by browser
             btn.classList.remove('hidden');
-            btn.onclick = () => window.location.replace(linkData.target);
+            btn.onclick = () => window.location.href = linkData.target;
 
-            // FIX: Await the DB save before redirecting to prevent race conditions
-            try {
-                await DB.incrementClick(key, linkData);
-            } catch(e) {
-                console.error("Click tracking failed:", e);
-            }
-
-            // Forward user
+            // Execute redirect
             setTimeout(() => {
                 window.location.replace(linkData.target);
-            }, 500);
+            }, 800);
         }
 
-        // --- AUTHENTICATION ---
+        // --- ADMIN LOGIN ---
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const pass = document.getElementById('password-input').value;
-            if (pass === ENV.ADMIN_PASSWORD) {
-                sessionStorage.setItem('auth_pro', 'true');
+            if (pass === ADMIN_PASSWORD) {
+                sessionStorage.setItem('auth', 'true');
                 showView('dashboard');
                 loadDashboard();
                 document.getElementById('password-input').value = '';
-                showToast("System unlocked successfully");
             } else {
-                showToast("Access Denied. Invalid Key.", 'error');
+                showToast("Incorrect password.", true);
             }
         });
 
         document.getElementById('btn-logout').addEventListener('click', () => {
-            sessionStorage.removeItem('auth_pro');
+            sessionStorage.removeItem('auth');
             showView('login');
-            showToast("System secured and locked.", 'info');
         });
 
-        // --- DASHBOARD UI EVENT LISTENERS ---
-        document.getElementById('expiration-select').addEventListener('change', (e) => {
-            const customContainer = document.getElementById('custom-date-container');
-            if (e.target.value === 'custom') {
-                customContainer.classList.remove('hidden');
-                customContainer.classList.add('fade-in');
-                document.getElementById('custom-datetime').required = true;
-            } else {
-                customContainer.classList.add('hidden');
-                document.getElementById('custom-datetime').required = false;
-            }
-        });
-
-        // --- LINK GENERATION ---
-        document.getElementById('create-link-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-generate');
-            const targetUrl = document.getElementById('target-url').value;
-            const expSelection = document.getElementById('expiration-select').value;
-            
-            // Visual Loading State
-            const originalBtnHtml = btn.innerHTML;
-            btn.innerHTML = `<div class="spinner !w-6 !h-6 !border-4 !border-white/20 !border-b-white"></div>`;
-            btn.disabled = true;
-
-            try {
-                // Ensure URL has protocol
-                let finalUrl = targetUrl;
-                if (!/^https?:\/\//i.test(finalUrl)) {
-                    finalUrl = 'https://' + finalUrl;
-                }
-
-                const shortCode = Math.random().toString(36).substring(2, 8); // 6 char alphanumeric
-                const key = `link_${shortCode}`;
-                
-                let expiresAt = null;
-                const now = Date.now();
-                
-                if (expSelection === '1h') expiresAt = now + (60 * 60 * 1000);
-                if (expSelection === '24h') expiresAt = now + (24 * 60 * 60 * 1000);
-                if (expSelection === '7d') expiresAt = now + (7 * 24 * 60 * 60 * 1000);
-                if (expSelection === 'custom') {
-                    const customDate = document.getElementById('custom-datetime').value;
-                    expiresAt = new Date(customDate).getTime();
-                }
-
-                const payload = { 
-                    target: finalUrl, 
-                    createdAt: now, 
-                    expiresAt: expiresAt,
-                    clicks: 0 
-                };
-
-                await DB.save(key, payload);
-                
-                // Reset Form
-                document.getElementById('target-url').value = '';
-                document.getElementById('expiration-select').value = 'lifetime';
-                document.getElementById('custom-date-container').classList.add('hidden');
-                
-                showToast(`Route deployed successfully!`);
-                loadDashboard();
-            } catch (err) {
-                console.error(err);
-                showToast("Database synchronization failed.", 'error');
-            } finally {
-                btn.innerHTML = originalBtnHtml;
-                btn.disabled = false;
-            }
-        });
-
-        // --- DASHBOARD RENDERER & CLEANUP ---
+        // --- DASHBOARD: RENDER LINKS ---
         async function loadDashboard() {
             const container = document.getElementById('links-container');
-            const countBadge = document.getElementById('link-count');
+            const count = document.getElementById('link-count');
             
-            container.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-40">
-                    <div class="spinner !w-8 !h-8 mb-4"></div>
-                    <span class="text-slate-400 font-medium text-sm">Syncing database...</span>
-                </div>
-            `;
+            container.innerHTML = `<div class="text-center text-gray-500 py-10 animate-pulse">Loading transfers...</div>`;
             
             const allLinks = await DB.getAll();
-            const now = Date.now();
-            let activeCount = 0;
-            let expiredKeys = [];
-
-            // Identify expired links for Auto-cleanup
-            Object.entries(allLinks).forEach(([key, data]) => {
-                if (data.expiresAt && now > data.expiresAt) {
-                    expiredKeys.push(key);
-                }
-            });
-
-            // Auto-Cleanup execution
-            if (expiredKeys.length > 0) {
-                console.log(`Auto-cleaning ${expiredKeys.length} expired links...`);
-                for (const key of expiredKeys) {
-                    await DB.delete(key);
-                    delete allLinks[key]; // Remove from current render map
-                }
-                showToast(`Auto-cleaned ${expiredKeys.length} expired routes`, 'info');
-            }
-
             const entries = Object.entries(allLinks).sort((a, b) => b[1].createdAt - a[1].createdAt);
             
+            count.textContent = `${entries.length} Links`;
+            container.innerHTML = '';
+
             if (entries.length === 0) {
-                countBadge.textContent = `0 Active`;
                 container.innerHTML = `
-                    <div class="flex flex-col items-center justify-center h-full py-20 text-slate-500 text-sm">
-                        <div class="bg-slate-800/50 p-4 rounded-full mb-4 border border-slate-700">
-                            <svg width="32" height="32" class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                        </div>
-                        No active routes found. Deploy your first link.
+                    <div class="flex flex-col items-center justify-center h-full py-16 text-gray-500 text-sm">
+                        <svg class="w-12 h-12 mb-3 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                        No active transfers. Create your first link!
                     </div>`;
                 return;
             }
 
-            countBadge.textContent = `${entries.length} Active`;
-            container.innerHTML = '';
+            const now = Date.now();
 
             entries.forEach(([key, data]) => {
                 const shortCode = key.replace('link_', '');
                 const baseUrl = window.location.origin + window.location.pathname;
                 const shareUrl = `${baseUrl}?l=${shortCode}`;
                 
-                let timeText = "Valid for Lifetime";
-                let statusDot = `<span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_#22c55e]"></span>`;
+                const isExpired = data.expiresAt && now > data.expiresAt;
                 
+                let timeText = "Valid for Lifetime";
                 if (data.expiresAt) {
                     const d = new Date(data.expiresAt);
-                    timeText = `Expires: ${d.toLocaleDateString()} at ${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-                    
-                    // If expiring in less than 1 hour, show yellow warning dot
-                    if (data.expiresAt - now < 3600000) {
-                        statusDot = `<span class="w-2 h-2 rounded-full bg-yellow-400 shadow-[0_0_5px_#facc15] animate-pulse"></span>`;
-                    }
+                    timeText = `Expires: ${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
                 }
 
-                const clicks = data.clicks || 0;
-
                 const card = document.createElement('div');
-                card.className = `p-5 rounded-2xl bg-slate-800/60 border border-slate-700 hover:border-slate-600 transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 group`;
+                card.className = `p-4 rounded-2xl border ${isExpired ? 'bg-gray-800/50 border-gray-700/50 opacity-60' : 'bg-gray-900 border-gray-700'} flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all`;
                 
                 card.innerHTML = `
                     <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-3 mb-1.5">
-                            ${statusDot}
-                            <span class="text-white font-mono font-bold tracking-wider text-lg">/${shortCode}</span>
-                            <div class="flex items-center gap-1 bg-slate-900/80 px-2 py-0.5 rounded text-xs font-bold text-slate-300 border border-slate-700 ml-2" title="Total Clicks">
-                                <svg width="14" height="14" class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                ${clicks}
-                            </div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="text-blue-400 font-mono font-bold tracking-wider">/${shortCode}</span>
+                            ${isExpired ? '<span class="text-[10px] uppercase font-bold tracking-wider text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded">Expired</span>' : '<span class="text-[10px] uppercase font-bold tracking-wider text-green-400 bg-green-400/10 px-2 py-0.5 rounded">Active</span>'}
                         </div>
-                        <a href="${data.target}" target="_blank" class="text-sm text-blue-400 hover:text-blue-300 truncate block w-full mb-2" title="${data.target}">${data.target}</a>
-                        <div class="text-xs text-slate-500 font-medium flex items-center gap-1">
-                            <svg width="14" height="14" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            ${timeText}
-                        </div>
+                        <a href="${data.target}" target="_blank" class="text-sm text-gray-300 hover:text-white truncate block w-full mb-2" title="${data.target}">${data.target}</a>
+                        <div class="text-xs text-gray-500 font-medium">${timeText}</div>
                     </div>
-                    
-                    <!-- Action Buttons -->
                     <div class="flex gap-2">
-                        <button onclick="openQRModal('${shareUrl}', '${shortCode}')" class="p-2.5 bg-slate-900 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl transition-colors border border-slate-700" title="QR Code">
-                            <svg width="20" height="20" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                        <button onclick="copyToClip('${shareUrl}')" class="p-2.5 bg-gray-800 hover:bg-blue-600 text-gray-300 hover:text-white rounded-xl transition-colors border border-gray-700 shadow-sm" title="Copy Link">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                         </button>
-                        <button onclick="copyToClip('${shareUrl}')" class="p-2.5 bg-slate-900 hover:bg-blue-600 text-slate-300 hover:text-white rounded-xl transition-colors border border-slate-700" title="Copy Link">
-                            <svg width="20" height="20" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                        </button>
-                        <button onclick="deleteLink('${key}')" class="p-2.5 bg-slate-900 hover:bg-red-500 hover:border-red-500 text-slate-300 hover:text-white rounded-xl transition-colors border border-slate-700" title="Delete Route">
-                            <svg width="20" height="20" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        <button onclick="deleteLink('${key}')" class="p-2.5 bg-gray-800 hover:bg-red-500 hover:border-red-500 text-gray-300 hover:text-white rounded-xl transition-colors border border-gray-700 shadow-sm" title="Close/Delete Link">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                     </div>
                 `;
@@ -652,19 +399,54 @@
             });
         }
 
-        // --- UTILS & MODALS ---
-        window.deleteLink = async (key) => {
-            if (confirm("Are you sure you want to permanently delete this route?")) {
-                await DB.delete(key);
-                showToast("Route permanently deleted.", 'info');
+        // --- DASHBOARD: CREATE LINK ---
+        document.getElementById('create-link-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-generate');
+            const targetUrl = document.getElementById('target-url').value;
+            const expSelection = document.getElementById('expiration-select').value;
+            
+            btn.innerHTML = `<div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>`;
+            btn.disabled = true;
+
+            try {
+                // Generate short string (5 chars)
+                const shortCode = Math.random().toString(36).substring(2, 7);
+                const key = `link_${shortCode}`;
+                
+                let expiresAt = null;
+                const now = Date.now();
+                if (expSelection === '1m') expiresAt = now + (60 * 1000);
+                if (expSelection === '1h') expiresAt = now + (60 * 60 * 1000);
+                if (expSelection === '24h') expiresAt = now + (24 * 60 * 60 * 1000);
+                if (expSelection === '7d') expiresAt = now + (7 * 24 * 60 * 60 * 1000);
+
+                await DB.save(key, { target: targetUrl, createdAt: now, expiresAt });
+                
+                document.getElementById('target-url').value = '';
+                showToast(`Transfer link generated!`);
                 loadDashboard();
+            } catch (err) {
+                console.error(err);
+                showToast("Error creating link.", true);
+            } finally {
+                btn.innerHTML = "Generate Short Link";
+                btn.disabled = false;
             }
+        });
+
+        // --- UTILS ---
+        window.deleteLink = async (key) => {
+            await DB.delete(key);
+            showToast("Transfer link closed.");
+            loadDashboard();
         };
 
         window.copyToClip = (text) => {
             if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text).then(() => showToast("Copied to clipboard"));
+                navigator.clipboard.writeText(text).then(() => showToast("Link copied to clipboard!"));
             } else {
+                // Fallback
                 let textArea = document.createElement("textarea");
                 textArea.value = text;
                 textArea.style.position = "fixed";
@@ -673,61 +455,15 @@
                 textArea.select();
                 try {
                     document.execCommand('copy');
-                    showToast("Copied to clipboard");
+                    showToast("Link copied!");
                 } catch (err) {
-                    showToast("Failed to copy", 'error');
+                    showToast("Failed to copy.", true);
                 }
                 document.body.removeChild(textArea);
             }
         };
 
-        // --- QR CODE FUNCTIONALITY ---
-        let currentQRUrl = "";
-        window.openQRModal = (url, code) => {
-            const modal = document.getElementById('qr-modal');
-            const content = document.getElementById('qr-modal-content');
-            const img = document.getElementById('qr-image');
-            
-            currentQRUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
-            img.src = currentQRUrl;
-            document.getElementById('qr-url-text').textContent = `Route: /${code}`;
-            
-            modal.classList.remove('hidden');
-            // Trigger reflow for animation
-            void modal.offsetWidth; 
-            modal.classList.remove('opacity-0');
-            content.classList.remove('scale-95');
-        };
-
-        window.closeQRModal = () => {
-            const modal = document.getElementById('qr-modal');
-            const content = document.getElementById('qr-modal-content');
-            
-            modal.classList.add('opacity-0');
-            content.classList.add('scale-95');
-            
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300); // match transition duration
-        };
-
-        window.downloadQR = () => {
-            if (!currentQRUrl) return;
-            fetch(currentQRUrl)
-                .then(response => response.blob())
-                .then(blob => {
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = 'link-transfer-qr.png';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    showToast("QR Code Downloaded");
-                })
-                .catch(() => showToast("Error downloading QR", "error"));
-        };
-
-        // Boot system
+        // Start
         init();
     </script>
 </body>
