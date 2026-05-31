@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Transfer Portal</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #3b82f6;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #3b82f6;
+        }
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid #3b82f6;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Added modern animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-indigo-50 via-white to-cyan-50 relative overflow-hidden">
+    
+    <!-- Decorative background elements -->
+    <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style="animation-delay: 1.5s;"></div>
+
+    <!-- Main Container -->
+    <div id="app-container" class="w-full max-w-4xl relative z-10">
+        <!-- Dynamic content will be injected here -->
+    </div>
+
+    <!-- Vercel KV Database Implementation -->
+    <script type="module">
+        // ==========================================
+        // VERCEL KV CONFIGURATION & SETUP
+        // ==========================================
+        
+        // ENV SETUP: 
+        // If deploying as a static site, paste your Vercel KV credentials here.
+        // The password remains a direct plain-text match (NO HASHING) as requested.
+        const ENV = {
+            PASSWORD: "test@123", // Match plain text password here
+            KV_REST_API_URL: "REPLACE_WITH_YOUR_KV_REST_API_URL", 
+            KV_REST_API_TOKEN: "REPLACE_WITH_YOUR_KV_REST_API_TOKEN"
+        };
+
+        // URL Parsing
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectId = urlParams.get('l');
+
+        // ==========================================
+        // INITIALIZATION
+        // ==========================================
+
+        async function init() {
+            renderLoading("Connecting to Vercel...");
+            
+            if (ENV.KV_REST_API_URL.includes("REPLACE_WITH")) {
+                console.warn("Vercel KV not configured yet. Set credentials to enable storage.");
+            }
+            
+            routeApplication();
+        }
+
+        function routeApplication() {
+            if (redirectId) {
+                // User is trying to use a generated link
+                handleRedirect(redirectId);
+            } else {
+                // User visited the main page
+                renderPasswordScreen();
+            }
+        }
+
+        // ==========================================
+        // REDIRECT LOGIC
+        // ==========================================
+
+        async function handleRedirect(id) {
+            renderLoading("Redirecting to destination...");
+            
+            try {
+                const res = await fetch(`${ENV.KV_REST_API_URL}/get/link_${id}`, {
+                    headers: { Authorization: `Bearer ${ENV.KV_REST_API_TOKEN}` }
+                });
+                
+                const responseData = await res.json();
+
+                if (responseData.result) {
+                    // Vercel KV returns JSON strings for objects, we parse it automatically
+                    const data = typeof responseData.result === 'string' 
+                        ? JSON.parse(responseData.result) 
+                        : responseData.result;
+                    
+                    // Check if active manually
+                    if (data.active === false) {
+                        renderError("This link has been manually disabled by the owner.");
+                        return;
+                    }
+
+                    // Check expiration
+                    if (data.expiresAt && Date.now() > data.expiresAt) {
+                        renderError("This link has expired.");
+                        return;
+                    }
+
+                    // Perform Redirect
+                    window.location.href = data.originalUrl;
+                } else {
+                    renderError("Link not found or is invalid.");
+                }
+            } catch (error) {
+                console.error(error);
+                renderError("An error occurred while trying to redirect.");
+            }
+        }
+
+        // ==========================================
+        // DASHBOARD LOGIC
+        // ==========================================
+
+        function checkPassword(e) {
+            e.preventDefault();
+            const input = document.getElementById('password-input').value;
+            const errorMsg = document.getElementById('password-error');
+            
+            if (input === ENV.PASSWORD) {
+                renderDashboard();
+                loadMyLinks();
+            } else {
+                errorMsg.classList.remove('hidden');
+                document.getElementById('password-input').value = '';
+            }
+        }
+
+        async function createLink(e) {
+            e.preventDefault();
+            const originalUrl = document.getElementById('target-url').value.trim();
+            const expiryOption = document.getElementById('expiry-option').value;
+            const createBtn = document.getElementById('create-btn');
+            const resultBox = document.getElementById('result-box');
+            const shortUrlInput = document.getElementById('short-url-result');
+
+            if (!originalUrl) return;
+
+            // Simple URL validation
+            try {
+                new URL(originalUrl);
+            } catch (_) {
+                alert("Please enter a valid URL including http:// or https://");
+                return;
+            }
+
+            createBtn.disabled = true;
+            createBtn.innerHTML = '<div class="spinner border-t-white"></div>';
+
+            // Generate short ID (6 random alphanumeric characters)
+            const shortId = Math.random().toString(36).substring(2, 8);
+            
+            // Calculate Expiration
+            let expiresAt = null;
+            if (expiryOption === '1h') {
+                expiresAt = Date.now() + (60 * 60 * 1000);
+            } else if (expiryOption === '24h') {
+                expiresAt = Date.now() + (24 * 60 * 60 * 1000);
+            }
+
+            const linkData = {
+                id: shortId,
+                originalUrl: originalUrl,
+                createdAt: Date.now(),
+                expiresAt: expiresAt,
+                active: true
+            };
+
+            try {
+                await fetch(`${ENV.KV_REST_API_URL}/set/link_${shortId}`, {
+                    method: 'POST',
+                    headers: { 
+                        Authorization: `Bearer ${ENV.KV_REST_API_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(linkData)
+                });
+                
+                // Construct the link
+                const baseUrl = window.location.origin + window.location.pathname;
+                const finalUrl = `${baseUrl}?l=${shortId}`;
+                
+                document.getElementById('target-url').value = '';
+                resultBox.classList.remove('hidden');
+                shortUrlInput.value = finalUrl;
+                
+                // Refresh list automatically
+                loadMyLinks();
+
+            } catch (error) {
+                console.error("Error creating link:", error);
+                alert("Failed to create link.");
+            } finally {
+                createBtn.disabled = false;
+                createBtn.innerHTML = 'Create Link';
+            }
+        }
+
+        async function loadMyLinks() {
+            const container = document.getElementById('links-container');
+            if(container) container.innerHTML = '<div class="text-center text-gray-400 py-10 text-sm">Fetching links from Vercel KV...</div>';
+            
+            try {
+                // Scan KV database for matching URL IDs
+                const scanRes = await fetch(`${ENV.KV_REST_API_URL}/scan/0/match/link_*`, {
+                    headers: { Authorization: `Bearer ${ENV.KV_REST_API_TOKEN}` }
+                });
+                const scanData = await scanRes.json();
+                const keys = scanData.result ? scanData.result[1] : [];
+                
+                if (!keys || keys.length === 0) {
+                    renderLinksList([]);
+                    return;
+                }
+
+                const links = [];
+                for (const key of keys) {
+                    const res = await fetch(`${ENV.KV_REST_API_URL}/get/${key}`, {
+                        headers: { Authorization: `Bearer ${ENV.KV_REST_API_TOKEN}` }
+                    });
+                    const data = await res.json();
+                    if (data.result) {
+                        const parsedData = typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
+                        links.push(parsedData);
+                    }
+                }
+
+                links.sort((a, b) => b.createdAt - a.createdAt);
+                renderLinksList(links);
+
+            } catch (error) {
+                console.error("Error fetching links:", error);
+                if(container) container.innerHTML = `<div class="text-center text-red-500 py-10 text-sm">Failed to load links. Have you added your Vercel KV credentials?</div>`;
+            }
+        }
+
+        async function toggleLinkStatus(id, currentStatus) {
+            try {
+                // Fetch the latest state
+                const res = await fetch(`${ENV.KV_REST_API_URL}/get/link_${id}`, {
+                    headers: { Authorization: `Bearer ${ENV.KV_REST_API_TOKEN}` }
+                });
+                const data = await res.json();
+                if (data.result) {
+                    const parsedData = typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
+                    parsedData.active = !currentStatus;
+                    
+                    // Save updated state back to Vercel KV
+                    await fetch(`${ENV.KV_REST_API_URL}/set/link_${id}`, {
+                        method: 'POST',
+                        headers: { 
+                            Authorization: `Bearer ${ENV.KV_REST_API_TOKEN}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(parsedData)
+                    });
+                    loadMyLinks();
+                }
+            } catch (error) {
+                console.error("Error updating status:", error);
+            }
+        }
+
+        async function deleteLink(id) {
+            if(confirm("Are you sure you want to delete this link forever?")) {
+                try {
+                    await fetch(`${ENV.KV_REST_API_URL}/del/link_${id}`, {
+                        headers: { Authorization: `Bearer ${ENV.KV_REST_API_TOKEN}` }
+                    });
+                    loadMyLinks();
+                } catch (error) {
+                    console.error("Error deleting link:", error);
+                }
+            }
+        }
+
+        // New Feature: Generate QR Code for the shortened URL
+        window.showQRCode = function(url) {
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 transition-opacity duration-300';
+            
+            modal.innerHTML = `
+                <div class="bg-white p-8 rounded-3xl shadow-2xl transform scale-95 transition-transform duration-300 max-w-sm w-full mx-4 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">Scan QR Code</h3>
+                        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-700 transition-colors">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <div class="bg-gray-50 p-6 rounded-2xl mb-6 flex justify-center border border-gray-100">
+                        <img src="${qrUrl}" alt="QR Code" class="w-48 h-48 rounded-lg shadow-sm mix-blend-multiply">
+                    </div>
+                    <p class="text-sm text-gray-500 mb-6 break-all text-center font-medium">${url}</p>
+                    <button onclick="this.closest('.fixed').remove()" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 rounded-xl transition-all shadow-md">Close Scanner</button>
+                </div>
+            `;
+            
+            // Close on background click
+            modal.addEventListener('click', (e) => {
+                if(e.target === modal) modal.remove();
+            });
+
+            document.body.appendChild(modal);
+            lucide.createIcons();
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('div').classList.remove('scale-95');
+            });
+        }
+
+        window.copyToClipboard = function(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Show a brief visual feedback (could be improved with a toast)
+                const copyBtn = document.getElementById('copy-btn');
+                if(copyBtn) {
+                    const originalHTML = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i data-lucide="check" class="w-5 h-5 text-green-500"></i>';
+                    lucide.createIcons();
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalHTML;
+                        lucide.createIcons();
+                    }, 2000);
+                }
+            }).catch(err => console.error('Failed to copy', err));
+        }
+
+        // Make functions globally accessible for inline HTML event handlers
+        window.checkPassword = checkPassword;
+        window.createLink = createLink;
+        window.toggleLinkStatus = toggleLinkStatus;
+        window.deleteLink = deleteLink;
+        window.showQRCode = showQRCode;
+
+        // ==========================================
+        // UI RENDERING
+        // ==========================================
+
+        const appContainer = document.getElementById('app-container');
+
+        function renderLoading(message) {
+            appContainer.innerHTML = `
+                <div class="glass-panel p-10 rounded-[2rem] flex flex-col items-center justify-center text-center shadow-2xl relative overflow-hidden max-w-sm mx-auto transform transition-all animate-float">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-blue-500/5 to-purple-500/10"></div>
+                    <div class="relative z-10 w-full">
+                        <div class="w-24 h-24 mb-8 mx-auto relative">
+                            <!-- Outer pulsing ring -->
+                            <div class="absolute inset-0 bg-blue-100 rounded-full animate-ping opacity-50"></div>
+                            <!-- Inner spinning track -->
+                            <div class="absolute inset-0 border-4 border-gray-100 rounded-full"></div>
+                            <!-- Spinning indicator -->
+                            <div class="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+                            <!-- Icon inside -->
+                            <div class="absolute inset-0 flex items-center justify-center bg-white rounded-full m-2 shadow-sm">
+                                <i data-lucide="zap" class="w-8 h-8 text-blue-600"></i>
+                            </div>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-2 tracking-tight">Routing...</h2>
+                        <p class="text-gray-500 font-medium">${message}</p>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function renderError(message) {
+            appContainer.innerHTML = `
+                <div class="glass-panel p-8 rounded-2xl text-center max-w-md mx-auto">
+                    <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Oops!</h2>
+                    <p class="text-gray-600 mb-6">${message}</p>
+                    ${!redirectId ? `<button onclick="location.reload()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">Try Again</button>` : ''}
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function renderPasswordScreen() {
+            appContainer.innerHTML = `
+                <div class="glass-panel p-8 rounded-2xl max-w-sm mx-auto shadow-xl">
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="lock" class="w-6 h-6"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Restricted Access</h2>
+                    <p class="text-gray-500 text-center text-sm mb-6">Enter the master password to manage your links.</p>
+                    
+                    <form onsubmit="window.checkPassword(event)">
+                        <div class="mb-4">
+                            <input type="password" id="password-input" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all" placeholder="Enter Password" required>
+                            <p id="password-error" class="text-red-500 text-xs mt-2 hidden">Incorrect password. Please try again.</p>
+                        </div>
+                        <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center">
+                            Unlock Dashboard
+                        </button>
+                    </form>
+                    <p class="text-xs text-center text-gray-400 mt-6">Secure Vercel Environment</p>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function renderDashboard() {
+            appContainer.innerHTML = `
+                <div class="glass-panel rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row border border-white/40 backdrop-blur-xl">
+                    <!-- Left Sidebar / Create Form -->
+                    <div class="w-full md:w-1/3 bg-white/60 p-6 md:p-8 border-b md:border-b-0 md:border-r border-gray-200/50">
+                        <div class="flex items-center gap-3 mb-8">
+                            <div class="p-2 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/30">
+                                <i data-lucide="link" class="w-6 h-6 text-white"></i>
+                            </div>
+                            <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">LinkTransfer</h1>
+                        </div>
+
+                        <form onsubmit="window.createLink(event)" class="space-y-5">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Target URL</label>
+                                <input type="url" id="target-url" placeholder="https://example.com/very-long-url..." class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none transition-all text-sm shadow-sm bg-white" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Expiration</label>
+                                <select id="expiry-option" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none transition-all text-sm bg-white shadow-sm appearance-none">
+                                    <option value="never">Never (Lifetime)</option>
+                                    <option value="1h">1 Hour</option>
+                                    <option value="24h">24 Hours</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" id="create-btn" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl mt-4 flex items-center justify-center">
+                                Generate Link
+                            </button>
+                        </form>
+
+                        <div id="result-box" class="mt-8 p-5 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200/50 rounded-2xl hidden shadow-sm">
+                            <label class="block text-xs font-bold text-green-700 uppercase mb-2 tracking-wide">Your Short Link</label>
+                            <div class="flex shadow-sm rounded-xl overflow-hidden">
+                                <input type="text" id="short-url-result" class="w-full bg-white px-4 py-3 border-y border-l border-green-200 text-sm text-gray-700 outline-none font-medium" readonly>
+                                <button id="copy-btn" type="button" onclick="window.copyToClipboard(document.getElementById('short-url-result').value)" class="bg-green-600 hover:bg-green-700 text-white px-4 transition-colors flex items-center justify-center border-y border-r border-green-600">
+                                    <i data-lucide="copy" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Side / Link List -->
+                    <div class="w-full md:w-2/3 p-6 md:p-8 bg-white/80">
+                        <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+                            <h2 class="text-xl font-bold text-gray-800">Active Links</h2>
+                            <span class="text-xs font-medium bg-blue-100 text-blue-700 px-3 py-1 rounded-full">Vercel KV Powered</span>
+                        </div>
+                        <div id="links-container" class="space-y-4 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
+                            <div class="text-center text-gray-400 py-10 text-sm">Loading your links...</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function renderLinksList(links) {
+            const container = document.getElementById('links-container');
+            if (!container) return;
+
+            if (links.length === 0) {
+                container.innerHTML = `<div class="text-center text-gray-400 py-10 text-sm bg-gray-50 rounded-lg border border-dashed border-gray-200">No links created yet. Paste a URL to get started.</div>`;
+                return;
+            }
+
+            const baseUrl = window.location.origin + window.location.pathname;
+
+            container.innerHTML = links.map(link => {
+                const shortUrl = `${baseUrl}?l=${link.id}`;
+                
+                // Determine status based on manual toggle and expiration date
+                let isExpired = link.expiresAt && Date.now() > link.expiresAt;
+                let statusColor = link.active && !isExpired ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+                let statusText = !link.active ? 'Disabled' : (isExpired ? 'Expired' : 'Active');
+                
+                let expiryText = link.expiresAt 
+                    ? `Expires: ${new Date(link.expiresAt).toLocaleString()}` 
+                    : 'Lifetime Link';
+
+                return `
+                    <div class="border border-gray-100 rounded-2xl p-5 hover:shadow-lg transition-all bg-white flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between group">
+                        <div class="flex-1 min-w-0 overflow-hidden">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${statusColor}">${statusText}</span>
+                                <span class="text-xs text-gray-400 font-medium">${expiryText}</span>
+                            </div>
+                            <a href="${shortUrl}" target="_blank" class="text-blue-600 font-semibold text-sm truncate block hover:underline">${shortUrl}</a>
+                            <p class="text-gray-500 text-xs truncate mt-1" title="${link.originalUrl}">${link.originalUrl}</p>
+                        </div>
+                        
+                        <div class="flex items-center gap-2 shrink-0 opacity-100 sm:opacity-50 group-hover:opacity-100 transition-opacity">
+                            <!-- Toggle Switch -->
+                            <label class="flex items-center cursor-pointer relative mr-2" title="Toggle active status">
+                                <input type="checkbox" onchange="window.toggleLinkStatus('${link.id}', ${link.active})" class="sr-only" ${link.active ? 'checked' : ''}>
+                                <div class="w-11 h-6 bg-gray-200 rounded-full shadow-inner transition-colors ${link.active ? 'bg-blue-500' : ''}"></div>
+                                <div class="dot absolute w-4 h-4 bg-white rounded-full shadow left-1 top-1 transition-transform ${link.active ? 'translate-x-5' : ''}"></div>
+                            </label>
+
+                            <!-- Modern Actions -->
+                            <button onclick="window.showQRCode('${shortUrl}')" class="p-2.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-all" title="View QR Code">
+                                <i data-lucide="qr-code" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="window.copyToClipboard('${shortUrl}')" class="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Copy Link">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="window.deleteLink('${link.id}')" class="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all" title="Delete Link">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            lucide.createIcons();
+        }
+
+        // Boot the app
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
