@@ -87,6 +87,10 @@
                     Unlock Dashboard
                 </button>
             </form>
+            
+            <p class="text-xs text-center text-red-400 mt-6 font-medium">
+                ⚠️ Warning: Pure client-side authentication is not secure for production.
+            </p>
         </div>
     </div>
 
@@ -218,21 +222,12 @@
         // ⚙️ SYSTEM CONFIGURATION & ENVIRONMENT VARIABLES
         // =========================================================================
         /*
-         * INSTRUCTIONS FOR VERCEL DEPLOYMENT:
-         * Because this is a high-speed static HTML file, it runs at the edge.
-         * To connect it to your Vercel KV Database securely, paste your keys here.
-         * * 1. Go to Vercel Dashboard -> Storage -> Create KV Database
-         * 2. View `.env.local` snippet in your KV Settings.
-         * 3. Paste the URL and Token below.
+         * WARNING: It is inherently insecure to place database tokens in frontend HTML.
+         * For a production app, these values must remain on a backend server.
          */
         const ENV = {
-            // Your custom Admin login password
             ADMIN_PASSWORD: "admin", 
-            
-            // e.g., "https://fitting-urchin-32145.upstash.io"
             KV_REST_API_URL: "", 
-            
-            // e.g., "AYhHAFGHK..."
             KV_REST_API_TOKEN: "" 
         };
         // =========================================================================
@@ -248,12 +243,13 @@
                 'Content-Type': 'application/json'
             },
             
-            async save(key, data) {
+            async save(key, data, useKeepAlive = false) {
                 if (isVercelMode) {
                     await fetch(`${ENV.KV_REST_API_URL}/set/${key}`, {
                         method: 'POST',
                         headers: this.headers,
-                        body: JSON.stringify(data)
+                        body: JSON.stringify(data),
+                        keepalive: useKeepAlive // FIX: Ensure request fires even if page navigates
                     });
                 } else {
                     const links = JSON.parse(localStorage.getItem('lt_pro_links') || '{}');
@@ -276,7 +272,7 @@
             async incrementClick(key, data) {
                 data.clicks = (data.clicks || 0) + 1;
                 data.lastClicked = Date.now();
-                await this.save(key, data); // Overwrite with new click count
+                await this.save(key, data, true); // Overwrite with new click count
             },
 
             async delete(key) {
@@ -291,12 +287,11 @@
             
             async getAll() {
                 if (isVercelMode) {
-                    // Fetch keys
+                    // FIX: This only gets the first 1000 records. A true production app needs pagination here.
                     const res = await fetch(`${ENV.KV_REST_API_URL}/scan/0?match=link_*&count=1000`, { headers: this.headers });
                     const scanData = await res.json();
                     const keys = scanData.result[1] || [];
                     
-                    // Fetch data for all keys in parallel for speed
                     const links = {};
                     const fetchPromises = keys.map(async (key) => {
                         const data = await this.get(key);
@@ -349,9 +344,10 @@
 
         // --- INIT & ROUTER ---
         async function init() {
-            // Setup minimum datetime for custom selector to "now"
-            const nowIso = new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
-            document.getElementById('custom-datetime').min = nowIso;
+            // FIX: Correctly set minimum datetime
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('custom-datetime').min = now.toISOString().slice(0,16);
 
             // Status Indicator Logic
             const ind = document.getElementById('db-status-indicator');
@@ -419,10 +415,6 @@
                 return;
             }
 
-            // Success: Update Analytics asynchronously
-            DB.incrementClick(key, linkData).catch(e => console.error("Analytics update failed", e));
-
-            // Execute redirect animation
             progress.style.width = '100%';
             title.textContent = "Transferring";
             title.classList.add('text-blue-400');
@@ -438,10 +430,17 @@
             btn.classList.remove('hidden');
             btn.onclick = () => window.location.replace(linkData.target);
 
+            // FIX: Await the DB save before redirecting to prevent race conditions
+            try {
+                await DB.incrementClick(key, linkData);
+            } catch(e) {
+                console.error("Click tracking failed:", e);
+            }
+
             // Forward user
             setTimeout(() => {
                 window.location.replace(linkData.target);
-            }, 1200);
+            }, 500);
         }
 
         // --- AUTHENTICATION ---
