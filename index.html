@@ -73,8 +73,7 @@
         <div class="glass-panel p-10 rounded-[2rem] shadow-2xl max-w-sm w-full slide-up">
             <div class="text-center mb-8">
                 <div class="bg-slate-800 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-slate-700 shadow-inner rotate-3">
-                    <!-- Added hardcoded width and height to completely prevent the massive lock icon crash -->
-                    <svg width="32" height="32" class="w-8 h-8 text-blue-400 -rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    <svg class="w-8 h-8 text-blue-400 -rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                 </div>
                 <h2 class="text-2xl font-extrabold text-white tracking-tight">System Access</h2>
                 <p class="text-slate-400 text-sm mt-2">Authenticate to manage routing</p>
@@ -98,7 +97,7 @@
         <header class="flex flex-col md:flex-row justify-between items-center mb-8 glass-panel p-5 md:px-8 md:py-6 rounded-3xl shadow-lg gap-4">
             <div class="flex items-center gap-4">
                 <div class="bg-gradient-to-br from-blue-600 to-indigo-600 p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
-                    <svg width="24" height="24" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                 </div>
                 <div>
                     <h1 class="text-2xl font-extrabold text-white tracking-tight">LinkTransfer <span class="text-blue-500">Pro</span></h1>
@@ -111,7 +110,7 @@
                     <span class="text-sm font-semibold text-slate-300" id="db-mode-label">Mode</span>
                 </div>
                 <button id="btn-logout" class="p-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all" title="Secure Lock">
-                    <svg width="24" height="24" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                 </button>
             </div>
         </header>
@@ -121,7 +120,7 @@
             <div class="lg:col-span-1">
                 <div class="glass-panel rounded-[2rem] p-7 shadow-xl sticky top-8">
                     <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                        <svg width="20" height="20" class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
                         Deploy Route
                     </h3>
                     
@@ -131,20 +130,9 @@
                             <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Destination URL</label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <svg width="20" height="20" class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
                                 </div>
                                 <input type="url" id="target-url" placeholder="https://example.com" class="w-full bg-slate-900/60 border border-slate-700 text-white rounded-xl pl-11 pr-4 py-3.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium" required>
-                            </div>
-                        </div>
-
-                        <!-- NEW FEATURE: Custom Alias -->
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Custom Alias <span class="text-slate-500 font-normal normal-case">(Optional)</span></label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <span class="text-slate-500 font-bold text-lg">/</span>
-                                </div>
-                                <input type="text" id="custom-alias" placeholder="my-custom-link" class="w-full bg-slate-900/60 border border-slate-700 text-white rounded-xl pl-9 pr-4 py-3.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-medium" pattern="[a-zA-Z0-9-_]+" title="Only letters, numbers, hyphens, and underscores are allowed.">
                             </div>
                         </div>
 
@@ -168,7 +156,7 @@
 
                         <button type="submit" id="btn-generate" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-500/25 mt-6 active:scale-[0.98] flex items-center justify-center gap-2">
                             <span>Deploy Short Link</span>
-                            <svg width="20" height="20" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                         </button>
                     </form>
                 </div>
@@ -182,20 +170,11 @@
                             <h3 class="text-xl font-bold text-white">Active Routes</h3>
                             <p class="text-sm text-slate-400 mt-1">Manage and track your transfer links</p>
                         </div>
-                        
-                        <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
-                            <!-- NEW FEATURE: Live Search Bar -->
-                            <div class="relative w-full sm:w-48 order-last sm:order-none">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg width="16" height="16" class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                                </div>
-                                <input type="text" id="search-input" placeholder="Search routes..." class="w-full bg-slate-900/50 border border-slate-700 text-white text-sm rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:border-blue-500 transition-all">
-                            </div>
-                            
+                        <div class="flex items-center gap-3">
                             <button onclick="loadDashboard()" class="p-2 text-slate-400 hover:text-white transition-colors" title="Refresh">
-                                <svg width="20" height="20" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                             </button>
-                            <span id="link-count" class="bg-blue-500/10 text-blue-400 text-sm font-bold px-4 py-1.5 rounded-full border border-blue-500/20 whitespace-nowrap">0 Active</span>
+                            <span id="link-count" class="bg-blue-500/10 text-blue-400 text-sm font-bold px-4 py-1.5 rounded-full border border-blue-500/20">0 Active</span>
                         </div>
                     </div>
                     
@@ -213,7 +192,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-white">Share via QR</h3>
                 <button onclick="closeQRModal()" class="text-slate-400 hover:text-white">
-                    <svg width="24" height="24" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
             <div class="bg-white p-4 rounded-2xl flex justify-center mb-6">
@@ -230,46 +209,38 @@
 
     <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 glass-panel text-white px-6 py-3.5 rounded-full shadow-2xl transition-all translate-y-20 opacity-0 duration-300 pointer-events-none z-50 flex items-center gap-3 font-semibold border-t border-slate-600/50">
-        <svg width="20" height="20" id="toast-icon" class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <svg id="toast-icon" class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         <span id="toast-message">Notification</span>
     </div>
 
     <script>
         // =========================================================================
-        // ⚙️ SYSTEM CONFIGURATION & SAFE ENVIRONMENT BRIDGE
+        // ⚙️ SYSTEM CONFIGURATION & ENVIRONMENT VARIABLES
         // =========================================================================
         /*
-         * This bridge completely prevents HTML browser crashes when fetching Vercel ENVs.
-         * If deployed via a build tool that reads process.env, it pulls them gracefully.
-         * If deployed as raw HTML, it safely falls back without throwing a ReferenceError.
+         * INSTRUCTIONS FOR VERCEL DEPLOYMENT:
+         * Because this is a high-speed static HTML file, it runs at the edge.
+         * To connect it to your Vercel KV Database securely, paste your keys here.
+         * * 1. Go to Vercel Dashboard -> Storage -> Create KV Database
+         * 2. View `.env.local` snippet in your KV Settings.
+         * 3. Paste the URL and Token below.
          */
-        const getSafeEnv = (key, fallbackStr) => {
-            try {
-                if (typeof process !== 'undefined' && process.env && process.env[key]) {
-                    return process.env[key];
-                }
-            } catch (error) { /* Silently prevent browser crash */ }
-            return fallbackStr;
-        };
-
         const ENV = {
-            // Your plain text password for login. 
-            ADMIN_PASSWORD: getSafeEnv('ADMIN_PASSWORD', "test@123"), 
+            // Your custom Admin login password
+            ADMIN_PASSWORD: "admin", 
             
-            // Your Vercel KV REST API URL (e.g., "https://fitting-urchin-32145.upstash.io")
-            KV_REST_API_URL: getSafeEnv('KV_REST_API_URL', ""), 
+            // e.g., "https://fitting-urchin-32145.upstash.io"
+            KV_REST_API_URL: "", 
             
-            // Your Vercel KV REST API Token (e.g., "AYhHAFGHK...")
-            KV_REST_API_TOKEN: getSafeEnv('KV_REST_API_TOKEN', "") 
+            // e.g., "AYhHAFGHK..."
+            KV_REST_API_TOKEN: "" 
         };
-
-        // Prevents double-slash URL fetching errors
-        const KV_BASE_URL = (ENV.KV_REST_API_URL || "").replace(/\/+$/, '');
-        const isVercelMode = KV_BASE_URL !== "" && ENV.KV_REST_API_TOKEN !== "";
         // =========================================================================
 
+        const isVercelMode = ENV.KV_REST_API_URL !== "" && ENV.KV_REST_API_TOKEN !== "";
+
         // ==========================================
-        // 💾 DATABASE ENGINE (Vercel KV API) WITH SAFETY NETS
+        // 💾 DATABASE ENGINE (Vercel KV API)
         // ==========================================
         const DB = {
             headers: {
@@ -279,16 +250,11 @@
             
             async save(key, data) {
                 if (isVercelMode) {
-                    try {
-                        await fetch(`${KV_BASE_URL}/set/${key}`, {
-                            method: 'POST',
-                            headers: this.headers,
-                            body: JSON.stringify(data)
-                        });
-                    } catch(e) {
-                        console.error("Vercel KV Save Error", e);
-                        showToast("Failed to communicate with cloud database", "error");
-                    }
+                    await fetch(`${ENV.KV_REST_API_URL}/set/${key}`, {
+                        method: 'POST',
+                        headers: this.headers,
+                        body: JSON.stringify(data)
+                    });
                 } else {
                     const links = JSON.parse(localStorage.getItem('lt_pro_links') || '{}');
                     links[key] = data;
@@ -298,22 +264,9 @@
             
             async get(key) {
                 if (isVercelMode) {
-                    try {
-                        const res = await fetch(`${KV_BASE_URL}/get/${key}`, { headers: this.headers });
-                        const json = await res.json();
-                        
-                        if (!json.result) return null;
-                        
-                        // Safety protection against malformed JSON from database
-                        try {
-                            return typeof json.result === 'string' ? JSON.parse(json.result) : json.result;
-                        } catch (parseError) {
-                            return json.result;
-                        }
-                    } catch(e) {
-                        console.error("Vercel KV Get Error", e);
-                        return null;
-                    }
+                    const res = await fetch(`${ENV.KV_REST_API_URL}/get/${key}`, { headers: this.headers });
+                    const json = await res.json();
+                    return json.result ? JSON.parse(json.result) : null;
                 } else {
                     const links = JSON.parse(localStorage.getItem('lt_pro_links') || '{}');
                     return links[key] || null;
@@ -328,11 +281,7 @@
 
             async delete(key) {
                 if (isVercelMode) {
-                    try {
-                        await fetch(`${KV_BASE_URL}/del/${key}`, { headers: this.headers });
-                    } catch(e) {
-                        console.error("Vercel KV Delete Error", e);
-                    }
+                    await fetch(`${ENV.KV_REST_API_URL}/del/${key}`, { headers: this.headers });
                 } else {
                     const links = JSON.parse(localStorage.getItem('lt_pro_links') || '{}');
                     delete links[key];
@@ -342,35 +291,20 @@
             
             async getAll() {
                 if (isVercelMode) {
-                    try {
-                        // Fetch keys
-                        const res = await fetch(`${KV_BASE_URL}/scan/0?match=link_*&count=1000`, { headers: this.headers });
-                        const scanData = await res.json();
-                        
-                        // Safety check if database is empty or token is invalid
-                        if (scanData.error) {
-                            console.error("Vercel KV Authorization Error:", scanData.error);
-                            showToast("Database Connection Error. Check Keys.", "error");
-                            return {};
-                        }
-                        
-                        const keys = scanData.result ? scanData.result[1] : [];
-                        if(!keys || keys.length === 0) return {};
-                        
-                        // Fetch data for all keys in parallel for speed
-                        const links = {};
-                        const fetchPromises = keys.map(async (key) => {
-                            const data = await this.get(key);
-                            if (data) links[key] = data;
-                        });
-                        
-                        await Promise.all(fetchPromises);
-                        return links;
-                    } catch(e) {
-                        console.error("Vercel KV Error:", e);
-                        showToast("Failed to load links from Database", "error");
-                        return {};
-                    }
+                    // Fetch keys
+                    const res = await fetch(`${ENV.KV_REST_API_URL}/scan/0?match=link_*&count=1000`, { headers: this.headers });
+                    const scanData = await res.json();
+                    const keys = scanData.result[1] || [];
+                    
+                    // Fetch data for all keys in parallel for speed
+                    const links = {};
+                    const fetchPromises = keys.map(async (key) => {
+                        const data = await this.get(key);
+                        if (data) links[key] = data;
+                    });
+                    
+                    await Promise.all(fetchPromises);
+                    return links;
                 } else {
                     return JSON.parse(localStorage.getItem('lt_pro_links') || '{}');
                 }
@@ -435,12 +369,7 @@
             }
 
             const urlParams = new URLSearchParams(window.location.search);
-            let shortCode = urlParams.get('l'); 
-            
-            // Advanced Routing: Detects if link is example.com/insta instead of example.com/?l=insta
-            if (!shortCode && window.location.pathname.length > 1 && window.location.pathname !== '/index.html') {
-                shortCode = window.location.pathname.substring(1);
-            }
+            const shortCode = urlParams.get('l'); 
 
             if (shortCode) {
                 showView('redirect');
@@ -519,8 +448,6 @@
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const pass = document.getElementById('password-input').value;
-            
-            // Direct plain-text password matching, exactly as requested.
             if (pass === ENV.ADMIN_PASSWORD) {
                 sessionStorage.setItem('auth_pro', 'true');
                 showView('dashboard');
@@ -551,27 +478,12 @@
             }
         });
 
-        // Live Search Filter Feature
-        document.getElementById('search-input').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const cards = document.querySelectorAll('#links-container .route-card');
-            cards.forEach(card => {
-                const textContent = card.innerText.toLowerCase();
-                if (textContent.includes(term)) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        });
-
         // --- LINK GENERATION ---
         document.getElementById('create-link-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-generate');
             const targetUrl = document.getElementById('target-url').value;
             const expSelection = document.getElementById('expiration-select').value;
-            let customAlias = document.getElementById('custom-alias').value.trim();
             
             // Visual Loading State
             const originalBtnHtml = btn.innerHTML;
@@ -585,25 +497,8 @@
                     finalUrl = 'https://' + finalUrl;
                 }
 
-                // Determine Short Code (Random vs Custom)
-                let shortCode = "";
-                if (customAlias) {
-                    shortCode = customAlias.replace(/[^a-zA-Z0-9-_]/g, ''); // sanitize
-                    if(!shortCode) shortCode = Math.random().toString(36).substring(2, 8); // fallback
-                } else {
-                    shortCode = Math.random().toString(36).substring(2, 8); // 6 char alphanumeric
-                }
-                
+                const shortCode = Math.random().toString(36).substring(2, 8); // 6 char alphanumeric
                 const key = `link_${shortCode}`;
-
-                // Validate if Custom Alias is already taken
-                const existingData = await DB.get(key);
-                if (existingData) {
-                    showToast("Alias already in use. Choose another.", 'error');
-                    btn.innerHTML = originalBtnHtml;
-                    btn.disabled = false;
-                    return;
-                }
                 
                 let expiresAt = null;
                 const now = Date.now();
@@ -627,7 +522,6 @@
                 
                 // Reset Form
                 document.getElementById('target-url').value = '';
-                document.getElementById('custom-alias').value = '';
                 document.getElementById('expiration-select').value = 'lifetime';
                 document.getElementById('custom-date-container').classList.add('hidden');
                 
@@ -646,7 +540,6 @@
         async function loadDashboard() {
             const container = document.getElementById('links-container');
             const countBadge = document.getElementById('link-count');
-            const searchInput = document.getElementById('search-input');
             
             container.innerHTML = `
                 <div class="flex flex-col items-center justify-center h-40">
@@ -657,6 +550,7 @@
             
             const allLinks = await DB.getAll();
             const now = Date.now();
+            let activeCount = 0;
             let expiredKeys = [];
 
             // Identify expired links for Auto-cleanup
@@ -683,7 +577,7 @@
                 container.innerHTML = `
                     <div class="flex flex-col items-center justify-center h-full py-20 text-slate-500 text-sm">
                         <div class="bg-slate-800/50 p-4 rounded-full mb-4 border border-slate-700">
-                            <svg width="32" height="32" class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                            <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                         </div>
                         No active routes found. Deploy your first link.
                     </div>`;
@@ -714,8 +608,7 @@
                 const clicks = data.clicks || 0;
 
                 const card = document.createElement('div');
-                // Added 'route-card' class to easily target for live search filtering
-                card.className = `route-card p-5 rounded-2xl bg-slate-800/60 border border-slate-700 hover:border-slate-600 transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 group`;
+                card.className = `p-5 rounded-2xl bg-slate-800/60 border border-slate-700 hover:border-slate-600 transition-all flex flex-col md:flex-row md:items-center justify-between gap-5 group`;
                 
                 card.innerHTML = `
                     <div class="flex-1 min-w-0">
@@ -723,13 +616,13 @@
                             ${statusDot}
                             <span class="text-white font-mono font-bold tracking-wider text-lg">/${shortCode}</span>
                             <div class="flex items-center gap-1 bg-slate-900/80 px-2 py-0.5 rounded text-xs font-bold text-slate-300 border border-slate-700 ml-2" title="Total Clicks">
-                                <svg width="14" height="14" class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                 ${clicks}
                             </div>
                         </div>
                         <a href="${data.target}" target="_blank" class="text-sm text-blue-400 hover:text-blue-300 truncate block w-full mb-2" title="${data.target}">${data.target}</a>
                         <div class="text-xs text-slate-500 font-medium flex items-center gap-1">
-                            <svg width="14" height="14" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             ${timeText}
                         </div>
                     </div>
@@ -737,23 +630,18 @@
                     <!-- Action Buttons -->
                     <div class="flex gap-2">
                         <button onclick="openQRModal('${shareUrl}', '${shortCode}')" class="p-2.5 bg-slate-900 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl transition-colors border border-slate-700" title="QR Code">
-                            <svg width="20" height="20" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
                         </button>
                         <button onclick="copyToClip('${shareUrl}')" class="p-2.5 bg-slate-900 hover:bg-blue-600 text-slate-300 hover:text-white rounded-xl transition-colors border border-slate-700" title="Copy Link">
-                            <svg width="20" height="20" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                         </button>
                         <button onclick="deleteLink('${key}')" class="p-2.5 bg-slate-900 hover:bg-red-500 hover:border-red-500 text-slate-300 hover:text-white rounded-xl transition-colors border border-slate-700" title="Delete Route">
-                            <svg width="20" height="20" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                     </div>
                 `;
                 container.appendChild(card);
             });
-
-            // Trigger search filter if there was an active search before reload
-            if (searchInput.value) {
-                searchInput.dispatchEvent(new Event('input'));
-            }
         }
 
         // --- UTILS & MODALS ---
@@ -817,15 +705,18 @@
 
         window.downloadQR = () => {
             if (!currentQRUrl) return;
-            // Modified approach to bypass strict CORS requirements on some devices
-            const link = document.createElement('a');
-            link.href = currentQRUrl;
-            link.setAttribute('target', '_blank');
-            link.setAttribute('download', 'qr-code.png');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast("QR Code successfully opened/downloaded.");
+            fetch(currentQRUrl)
+                .then(response => response.blob())
+                .then(blob => {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = 'link-transfer-qr.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    showToast("QR Code Downloaded");
+                })
+                .catch(() => showToast("Error downloading QR", "error"));
         };
 
         // Boot system
