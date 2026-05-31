@@ -73,6 +73,7 @@
         <div class="glass-panel p-10 rounded-[2rem] shadow-2xl max-w-sm w-full slide-up">
             <div class="text-center mb-8">
                 <div class="bg-slate-800 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-slate-700 shadow-inner rotate-3">
+                    <!-- Added hardcoded width and height to completely prevent the massive lock icon crash -->
                     <svg width="32" height="32" class="w-8 h-8 text-blue-400 -rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                 </div>
                 <h2 class="text-2xl font-extrabold text-white tracking-tight">System Access</h2>
@@ -235,27 +236,37 @@
 
     <script>
         // =========================================================================
-        // ⚙️ SYSTEM CONFIGURATION & ENVIRONMENT VARIABLES
+        // ⚙️ SYSTEM CONFIGURATION & SAFE ENVIRONMENT BRIDGE
         // =========================================================================
         /*
-         * INSTRUCTIONS FOR VERCEL DEPLOYMENT:
-         * To connect it to your Vercel KV Database securely, paste your keys here.
-         * NOTE: Because this is an HTML file, Vercel Dashboard .env variables will 
-         * not automatically inject. You MUST edit the values below directly.
+         * This bridge completely prevents HTML browser crashes when fetching Vercel ENVs.
+         * If deployed via a build tool that reads process.env, it pulls them gracefully.
+         * If deployed as raw HTML, it safely falls back without throwing a ReferenceError.
          */
-        const ENV = {
-            // Your plain text password for login. You can change it to whatever you want.
-            ADMIN_PASSWORD: "test@123", 
-            
-            // e.g., "https://fitting-urchin-32145.upstash.io"
-            KV_REST_API_URL: "", 
-            
-            // e.g., "AYhHAFGHK..."
-            KV_REST_API_TOKEN: "" 
+        const getSafeEnv = (key, fallbackStr) => {
+            try {
+                if (typeof process !== 'undefined' && process.env && process.env[key]) {
+                    return process.env[key];
+                }
+            } catch (error) { /* Silently prevent browser crash */ }
+            return fallbackStr;
         };
-        // =========================================================================
 
-        const isVercelMode = ENV.KV_REST_API_URL !== "" && ENV.KV_REST_API_TOKEN !== "";
+        const ENV = {
+            // Your plain text password for login. 
+            ADMIN_PASSWORD: getSafeEnv('ADMIN_PASSWORD', "test@123"), 
+            
+            // Your Vercel KV REST API URL (e.g., "https://fitting-urchin-32145.upstash.io")
+            KV_REST_API_URL: getSafeEnv('KV_REST_API_URL', ""), 
+            
+            // Your Vercel KV REST API Token (e.g., "AYhHAFGHK...")
+            KV_REST_API_TOKEN: getSafeEnv('KV_REST_API_TOKEN', "") 
+        };
+
+        // Prevents double-slash URL fetching errors
+        const KV_BASE_URL = (ENV.KV_REST_API_URL || "").replace(/\/+$/, '');
+        const isVercelMode = KV_BASE_URL !== "" && ENV.KV_REST_API_TOKEN !== "";
+        // =========================================================================
 
         // ==========================================
         // 💾 DATABASE ENGINE (Vercel KV API) WITH SAFETY NETS
@@ -269,7 +280,7 @@
             async save(key, data) {
                 if (isVercelMode) {
                     try {
-                        await fetch(`${ENV.KV_REST_API_URL}/set/${key}`, {
+                        await fetch(`${KV_BASE_URL}/set/${key}`, {
                             method: 'POST',
                             headers: this.headers,
                             body: JSON.stringify(data)
@@ -288,9 +299,17 @@
             async get(key) {
                 if (isVercelMode) {
                     try {
-                        const res = await fetch(`${ENV.KV_REST_API_URL}/get/${key}`, { headers: this.headers });
+                        const res = await fetch(`${KV_BASE_URL}/get/${key}`, { headers: this.headers });
                         const json = await res.json();
-                        return json.result ? JSON.parse(json.result) : null;
+                        
+                        if (!json.result) return null;
+                        
+                        // Safety protection against malformed JSON from database
+                        try {
+                            return typeof json.result === 'string' ? JSON.parse(json.result) : json.result;
+                        } catch (parseError) {
+                            return json.result;
+                        }
                     } catch(e) {
                         console.error("Vercel KV Get Error", e);
                         return null;
@@ -310,7 +329,7 @@
             async delete(key) {
                 if (isVercelMode) {
                     try {
-                        await fetch(`${ENV.KV_REST_API_URL}/del/${key}`, { headers: this.headers });
+                        await fetch(`${KV_BASE_URL}/del/${key}`, { headers: this.headers });
                     } catch(e) {
                         console.error("Vercel KV Delete Error", e);
                     }
@@ -325,7 +344,7 @@
                 if (isVercelMode) {
                     try {
                         // Fetch keys
-                        const res = await fetch(`${ENV.KV_REST_API_URL}/scan/0?match=link_*&count=1000`, { headers: this.headers });
+                        const res = await fetch(`${KV_BASE_URL}/scan/0?match=link_*&count=1000`, { headers: this.headers });
                         const scanData = await res.json();
                         
                         // Safety check if database is empty or token is invalid
